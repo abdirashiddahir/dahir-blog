@@ -1,0 +1,190 @@
+<style>
+  .page-with-sidebars { display: flex; gap: 0; align-items: flex-start; max-width: 1200px; margin: 0 auto; }
+  .sidebar-canvas { width: 160px; flex-shrink: 0; padding-top: 30px; position: sticky; top: 20px; }
+  .sidebar-canvas canvas { display: block; margin: 0 auto 6px; border-radius: 8px; }
+  .sidebar-label { text-align: center; font-size: 10px; color: #999; letter-spacing: 0.5px; font-family: -apple-system, sans-serif; }
+  .main-col { flex: 1; min-width: 0; padding: 0 20px; }
+  @media (max-width: 960px) {
+    .page-with-sidebars { flex-direction: column; align-items: center; }
+    .sidebar-canvas { display: none; }
+    .main-col { padding: 0; width: 100%; }
+  }
+</style>
+
+<script>
+// === V2X Connected Work Zone Animation ===
+function initV2X(canvasId) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  let t = 0;
+
+  function drawRoad() {
+    ctx.fillStyle = '#333';
+    ctx.fillRect(50, 0, 50, H);
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([10, 8]);
+    ctx.beginPath();
+    for (let y = (t * 2) % 18 - 18; y < H; y += 18) {
+      ctx.moveTo(75, y);
+      ctx.lineTo(75, y + 10);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawCones() {
+    [70, 115, 160].forEach(cy => {
+      ctx.fillStyle = '#f60';
+      ctx.beginPath();
+      ctx.moveTo(56, cy);
+      ctx.lineTo(52, cy + 10);
+      ctx.lineTo(60, cy + 10);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(53, cy + 4, 6, 2);
+    });
+  }
+
+  function drawVehicle(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(x - 6, y - 9, 12, 20, 3);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(150,200,255,0.5)';
+    ctx.fillRect(x - 4, y - 7, 8, 4);
+  }
+
+  function drawRSU() {
+    ctx.fillStyle = '#555';
+    ctx.fillRect(118, 50, 3, 35);
+    ctx.fillStyle = '#58a6ff';
+    ctx.beginPath();
+    ctx.arc(119, 46, 5, 0, Math.PI * 2);
+    ctx.fill();
+    const pulse = (t % 60) / 60;
+    for (let i = 0; i < 3; i++) {
+      const r = 8 + (pulse + i * 0.33) % 1 * 25;
+      const a = 1 - ((pulse + i * 0.33) % 1);
+      ctx.strokeStyle = `rgba(88,166,255,${a * 0.5})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(119, 46, r, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.stroke();
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, W, H);
+    drawRoad();
+    drawCones();
+    drawRSU();
+    const v1y = ((t * 1.5) % (H + 40)) - 20;
+    const v2y = H - ((t * 1.2 + 80) % (H + 40)) + 20;
+    drawVehicle(88, v1y, '#3fb950');
+    drawVehicle(88, v2y, '#58a6ff');
+    if (t % 120 < 80) {
+      ctx.fillStyle = 'rgba(88,166,255,0.8)';
+      ctx.font = '8px system-ui';
+      ctx.fillText('TIM', 124, 78);
+    }
+    t++;
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+// === EV Infrastructure / NEVI Animation ===
+function initEV(canvasId) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  let t = 0;
+  const stations = [
+    { x: 30, y: 50 }, { x: 85, y: 50 },
+    { x: 115, y: 120 }, { x: 50, y: 120 },
+    { x: 75, y: 185 },
+  ];
+
+  function drawNetwork() {
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 10;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(15, 50); ctx.lineTo(130, 50); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(15, 120); ctx.lineTo(130, 120); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(75, 15); ctx.lineTo(75, 210); ctx.stroke();
+    ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath(); ctx.moveTo(15, 50); ctx.lineTo(130, 50); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(15, 120); ctx.lineTo(130, 120); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(75, 15); ctx.lineTo(75, 210); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function drawStation(x, y, charge) {
+    ctx.fillStyle = '#21262d';
+    ctx.fillRect(x - 8, y - 12, 16, 24);
+    ctx.strokeStyle = '#3fb950';
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(x - 8, y - 12, 16, 24);
+    const h = 16 * charge;
+    ctx.fillStyle = charge > 0.6 ? '#3fb950' : charge > 0.3 ? '#d29922' : '#f85149';
+    ctx.fillRect(x - 5, y + 8 - h, 10, h);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('\u26A1', x, y - 2);
+  }
+
+  function drawEV(x, y) {
+    ctx.fillStyle = '#58a6ff';
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = '5px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('EV', x, y + 2);
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, W, H);
+    drawNetwork();
+    stations.forEach((s, i) => {
+      const charge = 0.3 + 0.7 * Math.abs(Math.sin(t * 0.02 + i * 1.2));
+      drawStation(s.x, s.y, charge);
+      const pulse = (t + i * 20) % 80;
+      if (pulse < 60) {
+        ctx.strokeStyle = `rgba(63,185,80,${0.3 * (1 - pulse / 60)})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, 14 + pulse * 0.35, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    });
+    drawEV(15 + ((t * 1.2) % 115), 50);
+    drawEV(75, 15 + ((t * 1.0 + 40) % 195));
+    drawEV(130 - ((t * 0.8 + 70) % 115), 120);
+    ctx.fillStyle = 'rgba(63,185,80,0.6)';
+    ctx.font = '7px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('NEVI Corridor', 75, H - 8);
+    t++;
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  initV2X('v2x-canvas');
+  initEV('ev-canvas');
+});
+</script>
