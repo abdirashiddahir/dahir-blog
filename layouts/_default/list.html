@@ -1,0 +1,325 @@
+{{ partial "header.html" . }}
+
+<main class="content" role="main">
+
+  {{ if .Content }}
+  <article class="article">
+    {{ if .Title }}
+    <h1 class="article-title">{{ .Title }}</h1>
+    {{ end }}
+    <div class="article-content">
+      {{ .Content }}
+    </div>
+  </article>
+  {{ end }}
+
+  {{ if .IsHome }}
+  <style>
+    .home-wrapper { display: flex; gap: 0; align-items: flex-start; max-width: 1200px; margin: 0 auto; }
+    .canvas-col { width: 200px; flex-shrink: 0; padding-top: 30px; }
+    .canvas-col canvas { display: block; margin: 0 auto 8px; border-radius: 8px; }
+    .canvas-label { text-align: center; font-size: 11px; color: #999; letter-spacing: 0.5px; font-family: -apple-system, sans-serif; }
+    .archive-col { flex: 1; min-width: 0; padding: 0 24px; }
+    @media (max-width: 860px) {
+      .home-wrapper { flex-direction: column; align-items: center; }
+      .canvas-col { width: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 0; margin-bottom: 20px; }
+      .archive-col { padding: 0; width: 100%; }
+    }
+  </style>
+
+  <div class="home-wrapper">
+
+    <!-- Left: V2X / Connected Work Zone animation -->
+    <div class="canvas-col">
+      <canvas id="v2x-canvas" width="180" height="260"></canvas>
+      <div class="canvas-label">Connected Work Zone</div>
+    </div>
+
+    <!-- Center: Article list -->
+    <div class="archive-col">
+      <div class="archive">
+        {{ $pages := .Site.RegularPages }}
+        {{ range (where $pages "Section" "!=" "").GroupByDate "2006" }}
+        <h2 class="archive-title">{{ .Key }}</h2>
+        {{ range .Pages }}
+        <article class="archive-item">
+          <a href="{{ .RelPermalink }}" class="archive-item-link">{{ .Title }}</a>
+          <span class="archive-item-date">
+            {{ .Date.Format "2006-01-02" }}
+          </span>
+        </article>
+        {{ end }}
+        {{ end }}
+      </div>
+    </div>
+
+    <!-- Right: EV / NEVI animation -->
+    <div class="canvas-col">
+      <canvas id="ev-canvas" width="180" height="260"></canvas>
+      <div class="canvas-label">EV Infrastructure</div>
+    </div>
+
+  </div>
+
+  <script>
+  // === V2X Connected Work Zone Animation ===
+  (function() {
+    const c = document.getElementById('v2x-canvas');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    let t = 0;
+
+    // Road
+    function drawRoad() {
+      ctx.fillStyle = '#333';
+      ctx.fillRect(60, 0, 60, H);
+      // Dashes
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([12, 10]);
+      ctx.beginPath();
+      ctx.moveTo(90, (t * 2) % 22 - 22);
+      for (let y = (t * 2) % 22 - 22; y < H; y += 22) {
+        ctx.moveTo(90, y);
+        ctx.lineTo(90, y + 12);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Work zone cones
+    function drawCones() {
+      const coneX = [68, 68, 68];
+      const coneY = [80, 130, 180];
+      coneX.forEach((cx, i) => {
+        ctx.fillStyle = '#f60';
+        ctx.beginPath();
+        ctx.moveTo(cx, coneY[i]);
+        ctx.lineTo(cx - 5, coneY[i] + 12);
+        ctx.lineTo(cx + 5, coneY[i] + 12);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(cx - 3, coneY[i] + 4, 6, 2);
+      });
+    }
+
+    // Vehicles
+    function drawVehicle(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.roundRect(x - 7, y - 10, 14, 22, 3);
+      ctx.fill();
+      // Windshield
+      ctx.fillStyle = 'rgba(150,200,255,0.5)';
+      ctx.fillRect(x - 5, y - 8, 10, 5);
+    }
+
+    // V2X signal arcs
+    function drawSignal(x, y, radius, alpha) {
+      ctx.strokeStyle = `rgba(88,166,255,${alpha})`;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, -Math.PI * 0.7, -Math.PI * 0.3);
+      ctx.stroke();
+    }
+
+    // RSU tower
+    function drawRSU() {
+      ctx.fillStyle = '#555';
+      ctx.fillRect(142, 60, 4, 40);
+      ctx.fillStyle = '#58a6ff';
+      ctx.beginPath();
+      ctx.arc(144, 56, 6, 0, Math.PI * 2);
+      ctx.fill();
+      // Broadcast rings
+      const pulse = (t % 60) / 60;
+      for (let i = 0; i < 3; i++) {
+        const r = 10 + (pulse + i * 0.33) % 1 * 30;
+        const a = 1 - ((pulse + i * 0.33) % 1);
+        ctx.strokeStyle = `rgba(88,166,255,${a * 0.5})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(144, 56, r, Math.PI * 0.5, Math.PI * 1.5);
+        ctx.stroke();
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Background
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, W, H);
+
+      drawRoad();
+      drawCones();
+      drawRSU();
+
+      // Moving vehicles
+      const v1y = ((t * 1.5) % (H + 40)) - 20;
+      const v2y = H - ((t * 1.2 + 80) % (H + 40)) + 20;
+      drawVehicle(105, v1y, '#3fb950');
+      drawVehicle(105, v2y, '#58a6ff');
+
+      // V2X signals from vehicles to RSU
+      if (Math.abs(v1y - 56) < 100) {
+        const d = Math.abs(v1y - 56) / 100;
+        drawSignal(105, v1y - 12, 15 + t % 20, 0.6 * (1 - d));
+      }
+
+      // TIM label
+      if (t % 120 < 80) {
+        ctx.fillStyle = 'rgba(88,166,255,0.8)';
+        ctx.font = '9px system-ui';
+        ctx.fillText('TIM', 148, 90);
+      }
+
+      t++;
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+
+  // === EV Infrastructure / NEVI Animation ===
+  (function() {
+    const c = document.getElementById('ev-canvas');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    let t = 0;
+
+    const stations = [
+      { x: 40, y: 60, charge: 0 },
+      { x: 100, y: 60, charge: 0 },
+      { x: 140, y: 140, charge: 0 },
+      { x: 60, y: 140, charge: 0 },
+      { x: 90, y: 210, charge: 0 },
+    ];
+
+    // Road network
+    function drawNetwork() {
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 12;
+      ctx.lineCap = 'round';
+      // Horizontal
+      ctx.beginPath(); ctx.moveTo(20, 60); ctx.lineTo(160, 60); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(20, 140); ctx.lineTo(160, 140); ctx.stroke();
+      // Vertical
+      ctx.beginPath(); ctx.moveTo(90, 20); ctx.lineTo(90, 240); ctx.stroke();
+      // Dashes
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.moveTo(20, 60); ctx.lineTo(160, 60); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(20, 140); ctx.lineTo(160, 140); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(90, 20); ctx.lineTo(90, 240); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Charging station icon
+    function drawStation(x, y, charge) {
+      // Base
+      ctx.fillStyle = '#21262d';
+      ctx.fillRect(x - 10, y - 14, 20, 28);
+      ctx.strokeStyle = '#3fb950';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x - 10, y - 14, 20, 28);
+
+      // Charge level bar
+      const h = 20 * charge;
+      ctx.fillStyle = charge > 0.6 ? '#3fb950' : charge > 0.3 ? '#d29922' : '#f85149';
+      ctx.fillRect(x - 6, y + 10 - h, 12, h);
+
+      // Lightning bolt
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 11px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('\u26A1', x, y - 4);
+    }
+
+    // EV vehicle dot
+    function drawEV(x, y) {
+      ctx.fillStyle = '#58a6ff';
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = '6px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('EV', x, y + 2.5);
+    }
+
+    // Coverage radius
+    function drawCoverage(x, y, r, alpha) {
+      ctx.strokeStyle = `rgba(63,185,80,${alpha})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Background
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, W, H);
+
+      drawNetwork();
+
+      // Update station charge levels
+      stations.forEach((s, i) => {
+        s.charge = 0.3 + 0.7 * Math.abs(Math.sin(t * 0.02 + i * 1.2));
+        drawStation(s.x, s.y, s.charge);
+
+        // Coverage pulse
+        const pulse = (t + i * 20) % 80;
+        if (pulse < 60) {
+          drawCoverage(s.x, s.y, 16 + pulse * 0.4, 0.3 * (1 - pulse / 60));
+        }
+      });
+
+      // Moving EVs along routes
+      const ev1x = 20 + ((t * 1.2) % 140);
+      drawEV(ev1x, 60);
+
+      const ev2y = 20 + ((t * 1.0 + 40) % 220);
+      drawEV(90, ev2y);
+
+      const ev3x = 160 - ((t * 0.8 + 70) % 140);
+      drawEV(ev3x, 140);
+
+      // NEVI corridor label
+      ctx.fillStyle = 'rgba(63,185,80,0.6)';
+      ctx.font = '8px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('NEVI Corridor', 90, H - 10);
+
+      t++;
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+  </script>
+
+  {{ else }}
+  {{/* Non-home list pages */}}
+  <div class="archive">
+    {{ $pages := .Pages }}
+    {{ range (where $pages "Section" "!=" "").GroupByDate "2006" }}
+    <h2 class="archive-title">{{ .Key }}</h2>
+    {{ range .Pages }}
+    <article class="archive-item">
+      <a href="{{ .RelPermalink }}" class="archive-item-link">{{ .Title }}</a>
+      <span class="archive-item-date">
+        {{ .Date.Format "2006-01-02" }}
+      </span>
+    </article>
+    {{ end }}
+    {{ end }}
+  </div>
+  {{ end }}
+
+</main>
+
+{{ partial "footer.html" . }}
