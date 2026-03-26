@@ -13,49 +13,11 @@
   </article>
   {{ end }}
 
-  {{ if .IsHome }}
-  <style>
-    .home-layout { display: flex; align-items: flex-start; max-width: 960px; margin: 0 auto; }
-    .home-articles { flex: 1; min-width: 0; }
-    .home-sidebar { width: 160px; flex-shrink: 0; margin-left: 40px; padding-top: 20px; }
-    .home-sidebar canvas { display: block; margin: 0 auto 6px; border-radius: 8px; }
-    .home-sidebar .label { text-align: center; font-size: 10px; color: #999; letter-spacing: 0.5px; font-family: -apple-system, sans-serif; margin-bottom: 20px; }
-    @media (max-width: 768px) {
-      .home-sidebar { display: none; }
-    }
-  </style>
-
-  <div class="home-layout">
-    <div class="home-articles">
-      <div class="archive">
-        {{ $pages := .Site.RegularPages }}
-        {{ range (where $pages "Section" "!=" "").GroupByDate "2006" }}
-        <h2 class="archive-title">{{ .Key }}</h2>
-        {{ range .Pages }}
-        <article class="archive-item">
-          <a href="{{ .RelPermalink }}" class="archive-item-link">{{ .Title }}</a>
-          <span class="archive-item-date">
-            {{ .Date.Format "2006-01-02" }}
-          </span>
-        </article>
-        {{ end }}
-        {{ end }}
-      </div>
-    </div>
-
-    <div class="home-sidebar">
-      <canvas id="v2x-canvas" width="140" height="220"></canvas>
-      <div class="label">Connected Work Zone</div>
-      <canvas id="ev-canvas" width="140" height="220"></canvas>
-      <div class="label">EV Infrastructure</div>
-    </div>
-  </div>
-
-  {{ partial "sidebar-animations.html" . }}
-
-  {{ else }}
   <div class="archive">
     {{ $pages := .Pages }}
+    {{ if .IsHome }}
+    {{ $pages = .Site.RegularPages }}
+    {{ end }}
     {{ range (where $pages "Section" "!=" "").GroupByDate "2006" }}
     <h2 class="archive-title">{{ .Key }}</h2>
     {{ range .Pages }}
@@ -68,6 +30,30 @@
     {{ end }}
     {{ end }}
   </div>
+
+  {{ if .IsHome }}
+  <style>
+    .footer-animations { display: flex; justify-content: center; gap: 40px; margin: 40px auto 10px; padding-top: 30px; border-top: 1px solid #eee; }
+    .footer-animations .anim-box { text-align: center; }
+    .footer-animations canvas { display: block; margin: 0 auto 6px; border-radius: 8px; }
+    .footer-animations .anim-label { font-size: 11px; color: #999; letter-spacing: 0.5px; font-family: -apple-system, sans-serif; }
+    @media (max-width: 500px) {
+      .footer-animations { flex-direction: column; align-items: center; gap: 20px; }
+    }
+  </style>
+
+  <div class="footer-animations">
+    <div class="anim-box">
+      <canvas id="v2x-canvas" width="160" height="200"></canvas>
+      <div class="anim-label">Connected Work Zone</div>
+    </div>
+    <div class="anim-box">
+      <canvas id="ev-canvas" width="160" height="200"></canvas>
+      <div class="anim-label">EV Infrastructure</div>
+    </div>
+  </div>
+
+  {{ partial "sidebar-animations.html" . }}
   {{ end }}
 
 </main>
