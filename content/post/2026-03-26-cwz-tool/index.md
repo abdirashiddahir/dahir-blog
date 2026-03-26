@@ -34,6 +34,30 @@ The **Connected Work Zone (CWZ) Tool** is a Shiny web application that:
 
 ---
 
+## Why Connected Work Zone — and Why It Matters
+
+Most state DOTs share work zone data using the [Work Zone Data Exchange (WZDx)](https://datahub.transportation.gov/Roadways-and-Bridges/Work-Zone-Data-Feed-Registry/69qe-yiui/data_preview) standard — a GeoJSON-based format designed for data sharing between agencies, navigation apps, and traffic management centers. As of 2026, over 20 states publish WZDx feeds at various versions:
+
+| State | Feed | Version |
+|-------|------|---------|
+| Ohio | publicapi.ohgo.com | WZDx 4.2 |
+| Texas | api.drivetexas.org | WZDx 4.2 |
+| Massachusetts | feed.massdot-swzm.com | WZDx 4.1 |
+| Washington | wzdx.wsdot.wa.gov | WZDx 4.2 |
+| Kentucky | storage.googleapis.com | WZDx 4.1 |
+| Indiana | in.carsprogram.org | WZDx 4.1 |
+| Delaware | wzdx.e-dot.com | WZDx 4.1 |
+| Michigan | mdotjcpd.state.mi.us | WZDx 4.0 |
+| **Colorado** | **data.cotrip.org** | **CWZ 1.0** |
+
+Notice the outlier: **Colorado is the only state using the Connected Work Zone (CWZ) standard** instead of WZDx. The CWZ standard goes beyond data exchange — it defines how work zone information gets encoded into J2735 Traveler Information Messages (TIMs) that roadside units can broadcast directly to connected vehicles.
+
+WZDx tells navigation apps "there's a work zone here." CWZ tells the vehicle's onboard unit "reduce speed to 45 mph in 500 meters — lane 2 is closed." The difference is the encoding: WZDx uses GeoJSON for web APIs, while CWZ uses ASN.1 UPER binary for V2X radio broadcast.
+
+Our tool bridges both worlds — it ingests work zone data from a state DOT's API (WZDx-style), then converts it into J2735-compliant TIMs (CWZ-style) for V2X deployment. The work zone data from any state's WZDx feed can serve as input; the output is the standardized binary that roadside units broadcast.
+
+---
+
 ## The Tech Stack: Five Languages, One App
 
 Here's what surprised me most: building a modern V2X tool requires *five different technologies*, each doing something the others can't.
