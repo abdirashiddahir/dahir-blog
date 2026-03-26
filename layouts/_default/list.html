@@ -14,15 +14,19 @@
   {{ end }}
 
   {{ if .IsHome }}
-  {{ partial "sidebar-animations.html" . }}
+  <style>
+    .home-layout { display: flex; align-items: flex-start; max-width: 960px; margin: 0 auto; }
+    .home-articles { flex: 1; min-width: 0; }
+    .home-sidebar { width: 160px; flex-shrink: 0; margin-left: 40px; padding-top: 20px; }
+    .home-sidebar canvas { display: block; margin: 0 auto 6px; border-radius: 8px; }
+    .home-sidebar .label { text-align: center; font-size: 10px; color: #999; letter-spacing: 0.5px; font-family: -apple-system, sans-serif; margin-bottom: 20px; }
+    @media (max-width: 768px) {
+      .home-sidebar { display: none; }
+    }
+  </style>
 
-  <div class="page-with-sidebars">
-    <div class="sidebar-canvas">
-      <canvas id="v2x-canvas" width="140" height="230"></canvas>
-      <div class="sidebar-label">Connected Work Zone</div>
-    </div>
-
-    <div class="main-col">
+  <div class="home-layout">
+    <div class="home-articles">
       <div class="archive">
         {{ $pages := .Site.RegularPages }}
         {{ range (where $pages "Section" "!=" "").GroupByDate "2006" }}
@@ -39,11 +43,15 @@
       </div>
     </div>
 
-    <div class="sidebar-canvas">
-      <canvas id="ev-canvas" width="140" height="230"></canvas>
-      <div class="sidebar-label">EV Infrastructure</div>
+    <div class="home-sidebar">
+      <canvas id="v2x-canvas" width="140" height="220"></canvas>
+      <div class="label">Connected Work Zone</div>
+      <canvas id="ev-canvas" width="140" height="220"></canvas>
+      <div class="label">EV Infrastructure</div>
     </div>
   </div>
+
+  {{ partial "sidebar-animations.html" . }}
 
   {{ else }}
   <div class="archive">
