@@ -36,7 +36,9 @@ The **Connected Work Zone (CWZ) Tool** is a Shiny web application that:
 
 ## Why Connected Work Zone — and Why It Matters
 
-Most state DOTs share work zone data using the [Work Zone Data Exchange (WZDx)](https://datahub.transportation.gov/Roadways-and-Bridges/Work-Zone-Data-Feed-Registry/69qe-yiui/data_preview) standard — a GeoJSON-based format designed for data sharing between agencies, navigation apps, and traffic management centers. As of 2026, over 20 states publish WZDx feeds at various versions:
+### From WZDx to CWZ
+
+Most state DOTs share work zone data using the [Work Zone Data Exchange (WZDx)](https://datahub.transportation.gov/Roadways-and-Bridges/Work-Zone-Data-Feed-Registry/69qe-yiui/data_preview) specification — a GeoJSON-based format designed for sharing work zone information between agencies, navigation apps, and traffic management centers. The [USDOT Work Zone Data Feed Registry](https://datahub.transportation.gov/Roadways-and-Bridges/Work-Zone-Data-Feed-Registry/69qe-yiui/data_preview) tracks over 20 states publishing feeds:
 
 | State | Feed | Version |
 |-------|------|---------|
@@ -50,11 +52,26 @@ Most state DOTs share work zone data using the [Work Zone Data Exchange (WZDx)](
 | Michigan | mdotjcpd.state.mi.us | WZDx 4.0 |
 | **Colorado** | **data.cotrip.org** | **CWZ 1.0** |
 
-Notice the outlier: **Colorado is the only state using the Connected Work Zone (CWZ) standard** instead of WZDx. The CWZ standard goes beyond data exchange — it defines how work zone information gets encoded into J2735 Traveler Information Messages (TIMs) that roadside units can broadcast directly to connected vehicles.
+In December 2024, the [Connected Work Zone (CWZ) Implementation Guide and Standard v01.00](https://www.ite.org) was published by AASHTO, ITE, NEMA, and SAE International, with USDOT support. The CWZ standard is **not a replacement for WZDx — it's its evolution**. The cover page itself reads: *"Previously Work Zone Data Exchange (WZDx)."*
 
-WZDx tells navigation apps "there's a work zone here." CWZ tells the vehicle's onboard unit "reduce speed to 45 mph in 500 meters — lane 2 is closed." The difference is the encoding: WZDx uses GeoJSON for web APIs, while CWZ uses ASN.1 UPER binary for V2X radio broadcast.
+### What CWZ adds to WZDx
 
-Our tool bridges both worlds — it ingests work zone data from a state DOT's API (WZDx-style), then converts it into J2735-compliant TIMs (CWZ-style) for V2X deployment. The work zone data from any state's WZDx feed can serve as input; the output is the standardized binary that roadside units broadcast.
+CWZ maintains full backward compatibility with WZDx's GeoJSON data exchange format. Both use the same WorkZoneFeed and GeoJSON structure for sharing work zone data between systems. What CWZ adds is guidance and requirements for the **Connected Vehicle Environment (CVE)** — the layer where work zone data reaches vehicles directly through roadside units:
+
+- **SAE J2945/4 compatibility** — mapping CWZ WorkZoneFeed fields to Roadside Safety Message (RSM) data concepts (Table 8 in the standard)
+- **NTCIP 1218 compatibility** — mapping CWZ DeviceFeed data to RSU configuration (Table 9 in the standard)
+- **SAE J2735 TIM guidance** — how work zone information maps to Traveler Information Messages that RSUs broadcast
+- **Field device data** — new DeviceFeed schemas for arrow boards, cameras, DMS signs, traffic sensors, traffic signals, and roadside units
+
+### Where UPER hex encoding fits in
+
+UPER (Unaligned Packed Encoding Rules) hex encoding is **not exclusive to CWZ** — it's part of the SAE J2735 standard, which defines the binary message formats for all V2X communication (BSMs, MAPs, SPaTs, TIMs, and more). Any V2X deployment uses UPER encoding, whether or not it follows CWZ.
+
+What CWZ provides is the **mapping** — how to translate work zone data fields (speed limits, lane closures, event types) from the GeoJSON feed into J2735 TIM fields for broadcast. The standard acknowledges this is not always straightforward: *"There are challenges to providing a one-to-one mapping between the CWZ elements and those of SAE."* Different agencies currently have different approaches to expressing work zone information using SAE ITIS codes.
+
+### What our tool does
+
+Colorado is the only state that has adopted CWZ 1.0 so far (other states are still on WZDx 4.x). Our tool works with both — it ingests work zone data from any state DOT's API feed, then converts it into J2735-compliant TIMs for V2X deployment. The GeoJSON data goes in; the UPER binary that roadside units broadcast comes out.
 
 ---
 
