@@ -24,11 +24,6 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
     highlightjsLang = ["r", "yaml", "python", "bash", "json"]
     highlightjsTheme = "github"
 
-    [params.logo]
-        url = "logo.png"
-        width = 50
-        height = 50
-        alt = "Logo"
 
 [markup]
   defaultMarkdownHandler = "goldmark"
