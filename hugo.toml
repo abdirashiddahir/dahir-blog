@@ -13,13 +13,22 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
 [[menu.main]]
     name = "About"
     url = "/about/"
+[[menu.main]]
+    name = "GitHub"
+    url = "https://github.com/abdirashiddahir"
 
 [params]
-    description = "Abdirashid M. Dahir"
+    description = "Abdirashid M. Dahir — Advanced Mobility Engineer"
     highlightjsVersion = "9.12.0"
     highlightjsCDN = "//cdnjs.cloudflare.com/ajax/libs"
     highlightjsLang = ["r", "yaml", "python", "bash", "json"]
     highlightjsTheme = "github"
+
+    [params.logo]
+        url = "logo.png"
+        width = 50
+        height = 50
+        alt = "Logo"
 
 [markup]
   defaultMarkdownHandler = "goldmark"
