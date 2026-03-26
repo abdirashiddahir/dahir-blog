@@ -243,4 +243,4 @@ If you're a domain expert (transportation, civil engineering, public health, env
 
 *This tool was developed for a state DOT's Connected Work Zone program. The federal J2735 schema is from [usdot-fhwa-stol/j2735decoder](https://github.com/usdot-fhwa-stol/j2735decoder) (Apache 2.0 license).*
 
-*Built with R Shiny, Python pycrate, and Claude AI.*
+*This article was written with Claude AI based on the context, experience, and guidance of Abdirashid Dahir. Built with R Shiny, Python pycrate, and Claude AI.*
