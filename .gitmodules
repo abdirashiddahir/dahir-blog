@@ -1,0 +1,3 @@
+[submodule "themes/hugo-lithium"]
+	path = themes/hugo-lithium
+	url = https://github.com/yihui/hugo-lithium.git

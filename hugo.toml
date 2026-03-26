@@ -1,0 +1,29 @@
+baseurl = "/"
+languageCode = "en-US"
+title = "Dahir"
+theme = "hugo-lithium"
+ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_cache$"]
+
+[permalinks]
+    post = "/:year/:month/:day/:slug/"
+
+[[menu.main]]
+    name = "Home"
+    url = "/"
+[[menu.main]]
+    name = "About"
+    url = "/about/"
+
+[params]
+    description = "Abdirashid M. Dahir"
+    highlightjsVersion = "9.12.0"
+    highlightjsCDN = "//cdnjs.cloudflare.com/ajax/libs"
+    highlightjsLang = ["r", "yaml", "python", "bash", "json"]
+    highlightjsTheme = "github"
+
+[markup]
+  defaultMarkdownHandler = "goldmark"
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.highlight]
+    codeFences = false
