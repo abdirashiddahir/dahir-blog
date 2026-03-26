@@ -6,13 +6,13 @@ date: "2026-03-26"
 slug: cwz-tool
 ---
 
-*A first-person account of developing ODOT's Connected Work Zone platform — from R Shiny dashboards to federally-validated UPER binary encoding — with Claude AI as a coding partner.*
+*A first-person account of developing a Connected Work Zone platform for a state DOT — from R Shiny dashboards to federally-validated UPER binary encoding — with Claude AI as a coding partner.*
 
 ---
 
 ## The Starting Point: An R User With a V2X Problem
 
-I'm a transportation engineer. My daily tools are R, GIS, and traffic models — not Python, not ASN.1, and definitely not binary encoding protocols. When ODOT asked me to build a tool that could generate J2735-compliant Traveler Information Messages (TIMs) for connected vehicles, I didn't know what UPER encoding was. I didn't know that `choiceID: 6` means absolute lat/lon coordinates. I didn't know that a 620KB Python file generated from an ASN.1 schema would become the backbone of our encoding pipeline.
+I'm a transportation engineer. My daily tools are R, GIS, and traffic models — not Python, not ASN.1, and definitely not binary encoding protocols. When a state DOT asked me to build a tool that could generate J2735-compliant Traveler Information Messages (TIMs) for connected vehicles, I didn't know what UPER encoding was. I didn't know that `choiceID: 6` means absolute lat/lon coordinates. I didn't know that a 620KB Python file generated from an ASN.1 schema would become the backbone of our encoding pipeline.
 
 What I did know was R Shiny. And I had Claude.
 
@@ -22,9 +22,9 @@ This article is about what happened next — 19,777 lines of R, a Python encoder
 
 ## What We Built
 
-The **ODOT Connected Work Zone (CWZ) Tool** is a Shiny web application that:
+The **Connected Work Zone (CWZ) Tool** is a Shiny web application that:
 
-1. **Ingests** Ohio's 398+ active work zones from the ODOT API and Google Sheets
+1. **Ingests** the state's 398+ active work zones from a DOT API and Google Sheets
 2. **Displays** them on an interactive Leaflet map with 82,320 road segments
 3. **Generates** J2735-compliant TravelerInformation Messages (TIMs) — the standard V2X format that roadside units broadcast to connected vehicles
 4. **Validates** the JSON structure against 38 rules derived from SAE J2735
@@ -92,12 +92,9 @@ One line. Works locally, works on shinyapps.io, works on AWS. The `py_require()`
 
 ### "Your JSON is proprietary"
 
-Our first attempt at sending TIM data to Commsignia (ODOT's RSU vendor) was met with:
+Our first attempt at sending TIM data to the RSU vendor was met with feedback that our JSON followed a proprietary format and was not portable. The recommendation was to use the standard UPER HEX encoded format instead.
 
-> *"Your JSON seems to follow a proprietary format, so it is not portable. Please use the standard UPER HEX encoded format."*
-> — Zoltan, Commsignia
-
-This email changed the trajectory of the project. We needed to convert our JSON to UPER binary — the packed bit-level encoding that V2X radios actually broadcast.
+This feedback changed the trajectory of the project. We needed to convert our JSON to UPER binary — the packed bit-level encoding that V2X radios actually broadcast.
 
 ### Finding the schema
 
@@ -122,9 +119,9 @@ The `001F` prefix (messageId=31 in UPER) confused the validator's bit alignment.
 
 **Lesson learned:** When validating V2X messages, match the encoding format to the validator's expectations. The RSU adds the MessageFrame during broadcast — you don't need to pre-wrap it.
 
-### Commsignia format compatibility
+### RSU vendor format compatibility
 
-Commsignia's sample TIM JSON uses a proprietary format for certain fields:
+The RSU vendor's sample TIM JSON uses a proprietary format for certain fields:
 
 ```json
 "viewAngle": {"bytes": "AAA=", "unusedBits": 0, "from000_0to022_5degrees": false}
@@ -159,12 +156,12 @@ I've been asked: "Did AI write your app?" The honest answer: **Claude was a codi
 - **Bridging knowledge gaps**: I'd say "I need to encode JSON to UPER HEX" and Claude would explain ASN.1, CHOICE types, bit packing, and then write the encoder — connecting concepts I'd never encountered
 - **Reading source code at scale**: Claude analyzed the 620KB federal schema file, the 88 Java files from the fedgov encoder, and the 19,777-line app.R to find specific functions and patterns
 - **Debugging across languages**: When the reticulate bridge failed, Claude traced the issue from R error messages through Python's import system to the Windows Store Python stub — three languages in one debug session
-- **Writing reference documentation**: Every HTML reference document (architecture, encoding, deployment, HeadingSlice, Commsignia compatibility) was generated with accurate code snippets and interactive visualizations
+- **Writing reference documentation**: Every HTML reference document (architecture, encoding, deployment, HeadingSlice, vendor compatibility) was generated with accurate code snippets and interactive visualizations
 
 **What Claude couldn't do:**
 
-- **Make architectural decisions**: "Should we use MessageFrame or bare encoding?" required testing on the actual federal validator and understanding ODOT's workflow. Claude provided options; I chose.
-- **Understand the domain**: V2X deployment is a niche field. Claude knew the J2735 standard but not ODOT's operational constraints, Commsignia's proprietary quirks, or the politics of sending hex files to a vendor.
+- **Make architectural decisions**: "Should we use MessageFrame or bare encoding?" required testing on the actual federal validator and understanding the agency's workflow. Claude provided options; I chose.
+- **Understand the domain**: V2X deployment is a niche field. Claude knew the J2735 standard but not the agency's operational constraints, vendor-specific quirks, or the politics of sending hex files to a hardware vendor.
 - **Guarantee correctness**: Every encoder output was verified against the federal validator. Claude's code passed — but I verified every GREEN independently.
 
 **The real productivity multiplier:**
@@ -186,7 +183,7 @@ R_deploy/
 ├── requirements.txt               (Python dependencies)
 ├── asn1/
 │   └── j2735decoder_...py         (620KB federal J2735 schema)
-├── geo_data/                      (pre-computed Ohio boundaries)
+├── geo_data/                      (pre-computed state boundaries)
 ├── Road_Inventory_Filtered/       (82,320 road segments)
 └── www/logo.png
 ```
@@ -244,6 +241,6 @@ If you're a domain expert (transportation, civil engineering, public health, env
 
 ---
 
-*This tool was developed for the Ohio Department of Transportation (ODOT) Connected Work Zone program by HNTB Corporation. The federal J2735 schema is from [usdot-fhwa-stol/j2735decoder](https://github.com/usdot-fhwa-stol/j2735decoder) (Apache 2.0 license).*
+*This tool was developed for a state DOT's Connected Work Zone program. The federal J2735 schema is from [usdot-fhwa-stol/j2735decoder](https://github.com/usdot-fhwa-stol/j2735decoder) (Apache 2.0 license).*
 
 *Built with R Shiny, Python pycrate, and Claude AI.*
